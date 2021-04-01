@@ -17,6 +17,7 @@ const navigationLinks = document.querySelectorAll('.navigation-link')
 const loghGoodsList = document.querySelector('.long-goods-list')
 const cartTableGoods = document.querySelector('.cart-table__goods')
 const cardTableTotal = document.querySelector('.card-table__total')
+const cartCounter = document.querySelector('.cart-count')
 
 const getGoods = async () => {
     const result = await fetch('db/db.json')
@@ -48,10 +49,16 @@ const cart = {
             `
             cartTableGoods.append(trGood)
         })
-        const totalPrice = this.cartGoods.reduce((sum, item) => {
-            return sum + item.price * item.count
-        }, 0)
+        const totalPrice = this.cartGoods.reduce(
+            (sum, item) => sum + item.price * item.count,
+            0
+        )
         cardTableTotal.textContent = totalPrice
+        const totalAmount = this.cartGoods.reduce(
+            (sum, item) => sum + item.count,
+            0
+        )
+        cartCounter.textContent = totalAmount
     },
     deleteGood(id) {
         this.cartGoods = this.cartGoods.filter(item => id !== item.id)
@@ -95,10 +102,22 @@ const cart = {
                     })
                 })
         }
+        this.renderCart()
+    },
+    clearCart() {
+        this.cartGoods = []
+        this.renderCart()
     },
 }
 
-cart.addCartGoods('001')
+cart.renderCart()
+
+document.body.addEventListener('click', e => {
+    const addToCart = e.target.closest('.add-to-cart')
+    if (addToCart) {
+        cart.addCartGoods(addToCart.dataset.id)
+    }
+})
 
 cartTableGoods.addEventListener('click', e => {
     const target = e.target
@@ -130,6 +149,9 @@ modalCart.addEventListener('click', e => {
     let target = e.target
     if (target == modalCart || target.classList.contains('modal-close')) {
         closeModal()
+    }
+    if (target.classList.contains('cart-clear')) {
+        cart.clearCart()
     }
 })
 
